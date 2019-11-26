@@ -79,11 +79,11 @@ def task3(deg: int, data: np.array, p0: np.array):
 
 
 def task4(y, f0, j):
-    l = 1e-2
-    N = np.matmul(j.T, j) + l * np.eye(j.shape[1])
+    ep = 1e-2
+    mat = np.matmul(j.T, j) + ep * np.eye(j.shape[1])
     r = y - f0
     n = np.matmul(j.T, r)
-    dp = np.linalg.solve(N, n)
+    dp = np.linalg.solve(mat, n)
     return dp
 
 
