@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import KFold
 
 
 def task1():
@@ -87,17 +88,31 @@ def task4(y, f0, j):
     return dp
 
 
+def task5(deg: int, features: np.array, target: np.array):
+    p0 = np.zeros(num_coefficients(deg + 1))
+    for i in range(10):
+        f0, j = task3(deg, features, p0)
+        dp = task4(target, f0, j)
+        p0 += dp
+
+    return p0
+
+
+def task6(train: np.array, target: np.array):
+    for train_index, test_index in KFold(n_splits=5).split(train):
+        feature_train_data = train[train_index]
+        feature_test_data = train[test_index]
+
+        target_train_data = target[train_index]
+        target_test_data = target[test_index]
+
+
 def main():
     features, target = task1()
 
-    max_iter = 10
-
     for deg in range(5):
-        p0 = np.zeros(num_coefficients(deg + 1))
-        for i in range(max_iter):
-            f0, j = task3(deg, features, p0)
-            dp = task4(target, f0, j)
-            p0 += dp
+        p0 = task5(deg, features, target)
+        print(p0)
 
 
 main()
