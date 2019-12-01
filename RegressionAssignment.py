@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from scipy.stats import mode
 from sklearn.model_selection import KFold
 
 
@@ -108,6 +109,8 @@ def covariance(y, f0, J):
 
 
 def task6(features: np.array, target: np.array):
+    best_degrees = []
+
     for train_index, test_index in KFold(n_splits=5).split(features):
         feature_train_data = features[train_index]
         feature_test_data = features[test_index]
@@ -115,8 +118,20 @@ def task6(features: np.array, target: np.array):
         target_train_data = target[train_index]
         target_test_data = target[test_index]
 
-        for deg in range(4):
+        price_means = []
+
+        for deg in [0, 1, 2, 3]:
             p0 = task5(deg, feature_train_data, target_train_data)
+            mean_diff = np.abs(np.mean(p0))
+            price_means.append(mean_diff)
+
+        best_mean_deg = price_means.index(np.min(price_means))
+        best_degrees.append(best_mean_deg)
+
+        most_common_deg = mode(best_degrees)[0][0]
+
+        guesses = task5(most_common_deg, features, target)
+        print(guesses)
 
 
 def main():
