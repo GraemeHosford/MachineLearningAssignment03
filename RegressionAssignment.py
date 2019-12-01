@@ -88,7 +88,7 @@ def task4(y, f0, j):
     return dp
 
 
-def task5(deg: int, features: np.array, target: np.array):
+def task5(deg: int, features: np.array, target: np.array) -> np.array:
     p0 = np.zeros(num_coefficients(deg + 1))
     for i in range(10):
         f0, j = task3(deg, features, p0)
@@ -98,21 +98,30 @@ def task5(deg: int, features: np.array, target: np.array):
     return p0
 
 
-def task6(train: np.array, target: np.array):
-    for train_index, test_index in KFold(n_splits=5).split(train):
-        feature_train_data = train[train_index]
-        feature_test_data = train[test_index]
+def covariance(y, f0, J):
+    l = 1e-2
+    N = np.matmul(J.T, J) + l * np.eye(J.shape[1])
+    r = y - f0
+    sigma0_squared = np.matmul(r.T, r) / (J.shape[0] - J.shape[1])
+    cov = sigma0_squared * np.linalg.inv(N)
+    return cov
+
+
+def task6(features: np.array, target: np.array):
+    for train_index, test_index in KFold(n_splits=5).split(features):
+        feature_train_data = features[train_index]
+        feature_test_data = features[test_index]
 
         target_train_data = target[train_index]
         target_test_data = target[test_index]
 
+        for deg in range(4):
+            p0 = task5(deg, feature_train_data, target_train_data)
+
 
 def main():
     features, target = task1()
-
-    for deg in range(5):
-        p0 = task5(deg, features, target)
-        print(p0)
+    task6(features, target)
 
 
 main()
