@@ -1,6 +1,6 @@
+import matplotlib as plt
 import numpy as np
 import pandas as pd
-from scipy.stats import mode
 from sklearn.model_selection import KFold
 
 
@@ -121,18 +121,23 @@ def task6(features: np.array, target: np.array):
         price_means = []
 
         for deg in [0, 1, 2, 3]:
-            p0 = task5(deg, feature_train_data, target_train_data)
-            mean_diff = np.abs(np.mean(p0))
+            p0 = task5(deg, feature_test_data, target_test_data)
+            mean_diff = np.abs(np.mean(p0) - np.mean(target_test_data))
             price_means.append(mean_diff)
 
-        best_mean_deg = price_means.index(np.min(price_means))
-        best_degrees.append(best_mean_deg)
 
-        most_common_deg = mode(best_degrees)[0][0]
+def task7(features: np.array):
+    x, y = np.meshgrid(np.arange(np.min(features[:, 0]), np.max(features[:, 0]), 0.1),
+                       np.arange(np.min(features[:, 1]), np.max(features[:, 1]), 0.1))
 
-        guesses = task5(most_common_deg, features, target)
-        print(guesses)
+    test_data = np.array({x.flatten(), y.flatten()}).transpose()
+    test_target = task2(degree, test_data, p0)
 
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection="3d")
+    ax.scatter(features[:, 0], features[:, 1], target, c="r")
+    ax.plot_surface(x, y, test_target.reshape(x.shape()))
+    plt.show()
 
 def main():
     features, target = task1()
