@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 # Used for 3d projection in task 7
+from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -133,17 +134,17 @@ def task6(features: np.array, target: np.array):
 
 
 def task7(features: np.array, target: np.array, p0: np.array, degree: int):
-    x, y, z = np.meshgrid(np.arange(np.min(features[:, 0]), np.max(features[:, 0]), 0.1),
-                          np.arange(np.min(features[:, 1]), np.max(features[:, 1]), 0.1),
-                          np.arange(np.min(features[:, 2]), np.max(features[:, 2]), 0.1))
+    plt.close("all")
+    x, y = np.meshgrid(np.arange(np.min(features[:, 0]), np.max(features[:, 0]), 0.1),
+                       np.arange(np.min(features[:, 1]), np.max(features[:, 1]), 0.1))
 
-    test_data = np.array([x.flatten(), y.flatten(), z.flatten()]).transpose()
+    test_data = np.array([x.flatten(), y.flatten()]).transpose()
     test_target = task2(test_data, p0, degree)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
     ax.scatter(features[:, 0], features[:, 1], features[:, 2], target, c="r")
-    ax.plot_surface(x, y, z, test_target.reshape(x.shape))
+    ax.plot_surface(x, y, test_target.reshape(x.shape))
     plt.show()
 
 
