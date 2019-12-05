@@ -1,8 +1,12 @@
-import matplotlib as plt
+import matplotlib.pyplot as plt
+# Used for 3d projection in task 7
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
 
+
+# Name: Graeme Hosford
+# Student ID: R00147327
 
 def task1():
     data = pd.read_csv("diamonds.csv")
@@ -52,8 +56,9 @@ def num_coefficients(deg: int) -> int:
     for n in range(deg + 1):
         for i in range(n + 1):
             for j in range(n + 1):
-                if i + j == n:
-                    t += 1
+                for k in range(n + 1):
+                    if i + j + k == n:
+                        t += 1
     return t
 
 
@@ -90,7 +95,7 @@ def task4(y, f0, j):
 
 
 def task5(deg: int, features: np.array, target: np.array) -> np.array:
-    p0 = np.zeros(num_coefficients(deg + 1))
+    p0 = np.zeros(num_coefficients(deg))
     for i in range(10):
         f0, j = task3(deg, features, p0)
         dp = task4(target, f0, j)
@@ -99,18 +104,16 @@ def task5(deg: int, features: np.array, target: np.array) -> np.array:
     return p0
 
 
-def covariance(y, f0, J):
+def covariance(y: np.array, f0: np.array, j: np.array):
     l = 1e-2
-    N = np.matmul(J.T, J) + l * np.eye(J.shape[1])
+    N = np.matmul(j.T, j) + l * np.eye(j.shape[1])
     r = y - f0
-    sigma0_squared = np.matmul(r.T, r) / (J.shape[0] - J.shape[1])
+    sigma0_squared = np.matmul(r.T, r) / (j.shape[0] - j.shape[1])
     cov = sigma0_squared * np.linalg.inv(N)
     return cov
 
 
 def task6(features: np.array, target: np.array):
-    best_degrees = []
-
     for train_index, test_index in KFold(n_splits=5).split(features):
         feature_train_data = features[train_index]
         feature_test_data = features[test_index]
@@ -125,23 +128,31 @@ def task6(features: np.array, target: np.array):
             mean_diff = np.abs(np.mean(p0) - np.mean(target_test_data))
             price_means.append(mean_diff)
 
+        best_deg = price_means.index(np.min(price_means))
+        return best_deg
 
-def task7(features: np.array):
-    x, y = np.meshgrid(np.arange(np.min(features[:, 0]), np.max(features[:, 0]), 0.1),
-                       np.arange(np.min(features[:, 1]), np.max(features[:, 1]), 0.1))
 
-    test_data = np.array({x.flatten(), y.flatten()}).transpose()
-    test_target = task2(degree, test_data, p0)
+def task7(features: np.array, target: np.array, p0: np.array, degree: int):
+    x, y, z = np.meshgrid(np.arange(np.min(features[:, 0]), np.max(features[:, 0]), 0.1),
+                          np.arange(np.min(features[:, 1]), np.max(features[:, 1]), 0.1),
+                          np.arange(np.min(features[:, 2]), np.max(features[:, 2]), 0.1))
+
+    test_data = np.array([x.flatten(), y.flatten(), z.flatten()]).transpose()
+    test_target = task2(test_data, p0, degree)
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection="3d")
-    ax.scatter(features[:, 0], features[:, 1], target, c="r")
-    ax.plot_surface(x, y, test_target.reshape(x.shape()))
+    ax.scatter(features[:, 0], features[:, 1], features[:, 2], target, c="r")
+    ax.plot_surface(x, y, z, test_target.reshape(x.shape))
     plt.show()
+
 
 def main():
     features, target = task1()
-    task6(features, target)
+    best_degree = task6(features, target)
+
+    p = task5(best_degree, features, target)
+    task7(features, target, p, best_degree)
 
 
 main()
