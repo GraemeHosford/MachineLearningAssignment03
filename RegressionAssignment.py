@@ -56,7 +56,12 @@ def task1() -> Tuple[np.array, np.array]:
         target_dataframe.append(useable_targets[x])
 
     # Convert dataframes to numpy arrays and return them
-    return feature_dataframe.to_numpy(), target_dataframe.to_numpy()
+    feature_array = feature_dataframe.to_numpy()
+    target_array = target_dataframe.to_numpy()
+
+    print("Contents of feature_array:\n", feature_array, "\n\n")
+    print("Contents of target_array:\n", target_array, "\n\n")
+    return feature_array, target_array
 
 
 def num_coefficients(deg: int) -> int:
@@ -73,7 +78,7 @@ def num_coefficients(deg: int) -> int:
 
 
 def task2(data: np.array, p: np.array, deg: int) -> np.array:
-    """ Task 2: Calculate Model Function """
+    """ Task 2: Model Function """
     print("Task 2 output")
     # Starting with zeroes, calculate a model function which describes the problem
     result = np.zeros(data.shape[0])
@@ -103,7 +108,7 @@ def task3(deg: int, data: np.array, p0: np.array) -> Tuple[np.array, np.array]:
         j[:, i] = di
 
     print("Result of linearize function")
-    print("f0 =", f0)
+    print("f0 =", f0, "\n\n")
     print("j =", j, "\n\n")
     return f0, j
 
