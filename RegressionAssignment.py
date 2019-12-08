@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -7,7 +9,7 @@ from sklearn.model_selection import KFold
 # Name: Graeme Hosford
 # Student ID: R00147327
 
-def task1():
+def task1() -> Tuple[np.array, np.array]:
     """ Task 1: Getting features and target as numpy arrays """
     print("Task 1 output")
     data = pd.read_csv("diamonds.csv")
@@ -41,7 +43,7 @@ def task1():
     print("\nAfter filtering the feature subsets there is", len(useable_features), "left to be used\n")
 
     for feature in useable_features:
-        print("The number of datapoints in these features with more than 800 datapoints is", len(feature))
+        print("The number of datapoints in these features with more than 800 datapoints is", len(feature), "\n\n")
 
     # Group list of features and targets into a single dataframe to make using it easier
     feature_dataframe = useable_features[0]
@@ -66,11 +68,13 @@ def num_coefficients(deg: int) -> int:
                 for k in range(n + 1):
                     if i + j + k == n:
                         t += 1
+    print("Number of coefficients", t, "\n\n")
     return t
 
 
 def task2(data: np.array, p: np.array, deg: int) -> np.array:
     """ Task 2: Calculate Model Function """
+    print("Task 2 output")
     # Starting with zeroes, calculate a model function which describes the problem
     result = np.zeros(data.shape[0])
     k = 0
@@ -78,11 +82,16 @@ def task2(data: np.array, p: np.array, deg: int) -> np.array:
         for i in range(n + 1):
             result += p[k] * (data[:, 0] ** i) * (data[:, 1] ** (n - i))
             k += 1
+
+    print("Result of calculating model function")
+    print(result)
+    print("\n\n")
     return result
 
 
-def task3(deg: int, data: np.array, p0: np.array):
+def task3(deg: int, data: np.array, p0: np.array) -> Tuple[np.array, np.array]:
     """ Task 3: Linearize """
+    print("Task 3 output")
     f0 = task2(data, p0, deg)
     j = np.zeros((len(f0), len(p0)))
     epsilon = 1e-6
@@ -92,21 +101,29 @@ def task3(deg: int, data: np.array, p0: np.array):
         p0[i] -= epsilon
         di = (fi - f0) / epsilon
         j[:, i] = di
+
+    print("Result of linearize function")
+    print("f0 =", f0)
+    print("j =", j, "\n\n")
     return f0, j
 
 
-def task4(y: np.array, f0: np.array, j: np.array):
+def task4(y: np.array, f0: np.array, j: np.array) -> np.array:
     """ Task 4: Calculate Update """
+    print("Task 4 output")
     ep = 1e-2
     mat = np.matmul(j.T, j) + ep * np.eye(j.shape[1])
     r = y - f0
     n = np.matmul(j.T, r)
     dp = np.linalg.solve(mat, n)
+
+    print("Result of calculating update", dp, "\n\n")
     return dp
 
 
 def task5(deg: int, features: np.array, target: np.array) -> np.array:
     """ Task 5: Regression """
+    print("Task 5 output")
     p0 = np.zeros(num_coefficients(deg))
     # Starting from zeroes calculate the update for the model function
     # which should start to move toward a certain point
@@ -115,11 +132,13 @@ def task5(deg: int, features: np.array, target: np.array) -> np.array:
         dp = task4(target, f0, j)
         p0 += dp
 
+    print("Result of regression", p0, "\n\n")
     return p0
 
 
-def task6(features: np.array, target: np.array):
+def task6(features: np.array, target: np.array) -> int:
     """ Task 6: Model Selection """
+    print("Task 6 output")
     price_means = []
 
     for train_index, test_index in KFold(n_splits=5).split(features):
@@ -146,16 +165,19 @@ def task6(features: np.array, target: np.array):
             lowest_mean = np.mean(means_list)
             best_deg = price_means.index(means_list)
 
+    print("Result for getting best degree to use", best_deg, "\n\n")
     return best_deg
 
 
-def task7(target: np.array, p0: np.array):
+def task7(target: np.array, p0: np.array) -> None:
     """ Task 7: Visualize Results """
     # Show graph of actual prices plotted against predicted prices
     plt.title("Actual Diamond Prices vs. Estimated Prices")
     plt.xlabel("Estimated Diamond Prices ($)")
     plt.ylabel("Actual Diamond Prices ($)")
     plt.scatter(x=p0, y=target)
+    # Straight line through origin to highlight correlation between actual and predicted prices
+    plt.plot([0, np.max(target)], [0, np.max(p0)], c="r")
     plt.show()
 
 
