@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-# Used for 3d projection in task 7
-from mpl_toolkits import mplot3d
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import KFold
@@ -10,13 +8,17 @@ from sklearn.model_selection import KFold
 # Student ID: R00147327
 
 def task1():
+    """ Task 1: Getting features and target as numpy arrays """
+    print("Task 1 output")
     data = pd.read_csv("diamonds.csv")
 
+    # Get feature datapoints and drop duplicates
     datapoints = data[["cut", "color", "clarity"]].drop_duplicates()
 
     features = list()
     target = list()
 
+    # For each feature retrieved add to the features and target lists
     for index, row in datapoints.iterrows():
         cut = row["cut"]
         color = row["color"]
@@ -32,6 +34,7 @@ def task1():
     for feature in features:
         print("The number of datapoints in this feature is", len(feature))
 
+    # Get the features with enough rows
     useable_features = list(filter(lambda f: len(f) > 800, features))
     useable_targets = list(filter(lambda t: len(t) > 800, target))
 
@@ -40,6 +43,7 @@ def task1():
     for feature in useable_features:
         print("The number of datapoints in these features with more than 800 datapoints is", len(feature))
 
+    # Group list of features and targets into a single dataframe to make using it easier
     feature_dataframe = useable_features[0]
     target_dataframe = useable_targets[0]
 
@@ -49,10 +53,12 @@ def task1():
     for x in range(1, len(useable_targets)):
         target_dataframe.append(useable_targets[x])
 
+    # Convert dataframes to numpy arrays and return them
     return feature_dataframe.to_numpy(), target_dataframe.to_numpy()
 
 
 def num_coefficients(deg: int) -> int:
+    # Find the number of coefficients in a 3 featured formula
     t = 0
     for n in range(deg + 1):
         for i in range(n + 1):
@@ -64,6 +70,8 @@ def num_coefficients(deg: int) -> int:
 
 
 def task2(data: np.array, p: np.array, deg: int) -> np.array:
+    """ Task 2: Calculate Model Function """
+    # Starting with zeroes, calculate a model function which describes the problem
     result = np.zeros(data.shape[0])
     k = 0
     for n in range(deg + 1):
@@ -74,6 +82,7 @@ def task2(data: np.array, p: np.array, deg: int) -> np.array:
 
 
 def task3(deg: int, data: np.array, p0: np.array):
+    """ Task 3: Linearize """
     f0 = task2(data, p0, deg)
     j = np.zeros((len(f0), len(p0)))
     epsilon = 1e-6
@@ -86,7 +95,8 @@ def task3(deg: int, data: np.array, p0: np.array):
     return f0, j
 
 
-def task4(y, f0, j):
+def task4(y: np.array, f0: np.array, j: np.array):
+    """ Task 4: Calculate Update """
     ep = 1e-2
     mat = np.matmul(j.T, j) + ep * np.eye(j.shape[1])
     r = y - f0
@@ -96,7 +106,10 @@ def task4(y, f0, j):
 
 
 def task5(deg: int, features: np.array, target: np.array) -> np.array:
+    """ Task 5: Regression """
     p0 = np.zeros(num_coefficients(deg))
+    # Starting from zeroes calculate the update for the model function
+    # which should start to move toward a certain point
     for i in range(10):
         f0, j = task3(deg, features, p0)
         dp = task4(target, f0, j)
@@ -105,27 +118,18 @@ def task5(deg: int, features: np.array, target: np.array) -> np.array:
     return p0
 
 
-def covariance(y: np.array, f0: np.array, j: np.array):
-    l = 1e-2
-    N = np.matmul(j.T, j) + l * np.eye(j.shape[1])
-    r = y - f0
-    sigma0_squared = np.matmul(r.T, r) / (j.shape[0] - j.shape[1])
-    cov = sigma0_squared * np.linalg.inv(N)
-    return cov
-
-
 def task6(features: np.array, target: np.array):
+    """ Task 6: Model Selection """
     price_means = []
 
     for train_index, test_index in KFold(n_splits=5).split(features):
-        feature_train_data = features[train_index]
+        # Not using train_index as regression does not use training in the same sense as other ML algorithms
         feature_test_data = features[test_index]
-
-        target_train_data = target[train_index]
         target_test_data = target[test_index]
 
         mean_list = []
 
+        # Find the degree which best describes the data
         for deg in range(4):
             p0 = task5(deg, feature_test_data, target_test_data)
             mean_diff = np.abs(np.mean(p0) - np.mean(target_test_data))
@@ -136,6 +140,7 @@ def task6(features: np.array, target: np.array):
     lowest_mean = None
     best_deg = None
 
+    # Of all degrees found get the one which has the lowest mean difference
     for means_list in price_means:
         if lowest_mean is None or np.mean(means_list) < lowest_mean:
             lowest_mean = np.mean(means_list)
@@ -144,22 +149,29 @@ def task6(features: np.array, target: np.array):
     return best_deg
 
 
-def task7(features: np.array, target: np.array, p0: np.array, degree: int):
-    plt.close("all")
-
-    fig = plt.figure()
-    ax = fig.add_subplot()
-    ax.plot(p0)
-    ax.plot(target)
+def task7(target: np.array, p0: np.array):
+    """ Task 7: Visualize Results """
+    # Show graph of actual prices plotted against predicted prices
+    plt.title("Actual Diamond Prices vs. Estimated Prices")
+    plt.xlabel("Estimated Diamond Prices ($)")
+    plt.ylabel("Actual Diamond Prices ($)")
+    plt.scatter(x=p0, y=target)
     plt.show()
 
 
 def main():
+    # Get features and target
     features, target = task1()
+
+    # Find the best degree
     best_degree = task6(features, target)
 
+    # Get the price predictions based on the degree found
     p = task5(best_degree, features, target)
-    task7(features, target, p, best_degree)
+    predictions = task2(features, p, best_degree)
+
+    # Show the results of regression plotted against actual prices
+    task7(target, predictions)
 
 
 main()
