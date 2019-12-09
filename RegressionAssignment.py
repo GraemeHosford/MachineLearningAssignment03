@@ -110,10 +110,19 @@ def task3(deg: int, data: np.array, p0: np.array) -> Tuple[np.array, np.array]:
     j = np.zeros((len(f0), len(p0)))
     epsilon = 1e-6
     for i in range(len(p0)):
+        # Add epsilon to each value within p0
         p0[i] += epsilon
+
+        # Get model function
         fi = task2(data, p0, deg)
+
+        # Minus epsilon from each value within p0
         p0[i] -= epsilon
+
+        # Get difference between fi and f0 then divide by epsilon
         di = (fi - f0) / epsilon
+
+        # Add to Jacobian
         j[:, i] = di
 
     # Show the results of linearization, showing the f0 array and Jacobian matrix
