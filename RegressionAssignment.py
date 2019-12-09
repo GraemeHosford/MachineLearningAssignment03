@@ -31,7 +31,7 @@ def task1() -> Tuple[np.array, np.array]:
         features.append(data[select][["carat", "depth", "table"]])
         target.append(data[select]["price"])
 
-    print("\nBefore filtering features by number of datapoints each number of datapoints is shown here\n")
+    print("Before filtering features by number of datapoints each number of datapoints is shown here\n")
 
     for feature in features:
         print("The number of datapoints in this feature is", len(feature))
@@ -40,10 +40,10 @@ def task1() -> Tuple[np.array, np.array]:
     useable_features = list(filter(lambda f: len(f) > 800, features))
     useable_targets = list(filter(lambda t: len(t) > 800, target))
 
-    print("\nAfter filtering the feature subsets there is", len(useable_features), "left to be used\n")
+    print("\nAfter filtering the feature subsets there is", len(useable_features), "left to be used")
 
     for feature in useable_features:
-        print("The number of datapoints in these features with more than 800 datapoints is", len(feature), "\n\n")
+        print("The number of datapoints in these features with more than 800 datapoints is", len(feature))
 
     # Group list of features and targets into a single dataframe to make using it easier
     feature_dataframe = useable_features[0]
@@ -59,8 +59,8 @@ def task1() -> Tuple[np.array, np.array]:
     feature_array = feature_dataframe.to_numpy()
     target_array = target_dataframe.to_numpy()
 
-    print("Contents of feature_array:\n", feature_array, "\n\n")
-    print("Contents of target_array:\n", target_array, "\n\n")
+    print("Contents of feature_array:\n", feature_array, "\n")
+    print("Contents of target_array:\n", target_array, "\n")
     return feature_array, target_array
 
 
@@ -73,13 +73,12 @@ def num_coefficients(deg: int) -> int:
                 for k in range(n + 1):
                     if i + j + k == n:
                         t += 1
-    print("Number of coefficients", t, "\n\n")
+    print("Number of coefficients for degree %d = %d" % (deg, t), "\n")
     return t
 
 
 def task2(data: np.array, p: np.array, deg: int) -> np.array:
     """ Task 2: Model Function """
-    print("Task 2 output")
     # Starting with zeroes, calculate a model function which describes the problem
     result = np.zeros(data.shape[0])
     k = 0
@@ -88,15 +87,14 @@ def task2(data: np.array, p: np.array, deg: int) -> np.array:
             result += p[k] * (data[:, 0] ** i) * (data[:, 1] ** (n - i))
             k += 1
 
-    print("Result of calculating model function")
-    print(result)
-    print("\n\n")
+    print("Task 2 output for degree =", deg)
+    print("Result of model function")
+    print(result, "\n")
     return result
 
 
 def task3(deg: int, data: np.array, p0: np.array) -> Tuple[np.array, np.array]:
     """ Task 3: Linearize """
-    print("Task 3 output")
     f0 = task2(data, p0, deg)
     j = np.zeros((len(f0), len(p0)))
     epsilon = 1e-6
@@ -107,28 +105,28 @@ def task3(deg: int, data: np.array, p0: np.array) -> Tuple[np.array, np.array]:
         di = (fi - f0) / epsilon
         j[:, i] = di
 
+    print("Task 3 output for degree =", deg)
     print("Result of linearize function")
-    print("f0 =", f0, "\n\n")
-    print("j =", j, "\n\n")
+    print("f0 =", f0, "\n")
+    print("j =", j, "\n")
     return f0, j
 
 
 def task4(y: np.array, f0: np.array, j: np.array) -> np.array:
     """ Task 4: Calculate Update """
-    print("Task 4 output")
     ep = 1e-2
     mat = np.matmul(j.T, j) + ep * np.eye(j.shape[1])
     r = y - f0
     n = np.matmul(j.T, r)
     dp = np.linalg.solve(mat, n)
 
-    print("Result of calculating update", dp, "\n\n")
+    print("Task 4 output")
+    print("Result of calculating update", dp, "\n")
     return dp
 
 
 def task5(deg: int, features: np.array, target: np.array) -> np.array:
     """ Task 5: Regression """
-    print("Task 5 output")
     p0 = np.zeros(num_coefficients(deg))
     # Starting from zeroes calculate the update for the model function
     # which should start to move toward a certain point
@@ -137,13 +135,13 @@ def task5(deg: int, features: np.array, target: np.array) -> np.array:
         dp = task4(target, f0, j)
         p0 += dp
 
-    print("Result of regression", p0, "\n\n")
+    print("Task 5 output for degree =", deg)
+    print("Result of regression", p0, "\n")
     return p0
 
 
 def task6(features: np.array, target: np.array) -> int:
     """ Task 6: Model Selection """
-    print("Task 6 output")
     price_means = []
 
     for train_index, test_index in KFold(n_splits=5).split(features):
@@ -170,7 +168,8 @@ def task6(features: np.array, target: np.array) -> int:
             lowest_mean = np.mean(means_list)
             best_deg = price_means.index(means_list)
 
-    print("Result for getting best degree to use", best_deg, "\n\n")
+    print("Task 6 output")
+    print("Result for getting best degree to use", best_deg, "\n")
     return best_deg
 
 
